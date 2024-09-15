@@ -1,31 +1,21 @@
 ---
-- name: List Installed Applications on Windows VM
-  hosts: windows_vm
+- name: Install Chocolatey and manage packages on Windows
+  hosts: windows
   tasks:
-    - name: Get list of installed applications from registry
-      win_shell: |
-        $installedApps = @()
-        $registryPaths = @(
-          'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall',
-          'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall'
-        )
-        foreach ($path in $registryPaths) {
-          $keys = Get-ChildItem -Path $path
-          foreach ($key in $keys) {
-            $props = Get-ItemProperty -Path $key.PSPath
-            if ($props.DisplayName) {
-              $installedApps += [PSCustomObject]@{
-                Name          = $props.DisplayName
-                Version       = $props.DisplayVersion
-                InstallLocation = $props.InstallLocation
-                UninstallString = $props.UninstallString
-              }
-            }
-          }
-        }
-        $installedApps | Format-Table -AutoSize
-      register: installed_apps
+    - name: Ensure Chocolatey is installed
+      win_chocolatey:
+        name: chocolatey
+        state: present
+      become: yes
+      tags:
+        - chocolatey
 
-    - name: Display installed applications
-      debug:
-        msg: "{{ installed_apps.stdout_lines }}"
+    - name: Install packages using Chocolatey
+      chocolatey.chocolatey.win_chocolatey:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - git
+        - vscode
+      tags:
+        - packages
