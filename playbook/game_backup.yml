@@ -1,0 +1,19 @@
+---
+- name: Backup and zip directories for specified games
+  hosts: windows_vm
+  gather_facts: yes
+  vars:
+    game_list:
+      - name: 'gta5'
+      - name: 'wukong'
+      # Add more games as needed
+
+  tasks:
+    - name: Backup and zip directories for selected games
+      include_role:
+        name: backup
+      vars:
+        game_name: "{{ item.name }}"
+        zip_dest: "{{ backup_base_dest }}\\{{ item.name }}\\{{ item.name }}-{{ timestamp }}.zip"
+      with_items: "{{ game_list }}"
+      when: "'{{ item.name }}' in ansible_run_tags"

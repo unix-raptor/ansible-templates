@@ -1,2 +1,18 @@
 ---
-# tasks file for game_backup
+- name: Ensure backup base directory exists
+  win_file:
+    path: "{{ backup_base_dest }}"
+    state: directory
+
+- name: Ensure game-specific backup directory exists
+  win_file:
+    path: "{{ backup_base_dest }}\\{{ game_name }}"
+    state: directory
+
+- name: Print the file destination directory
+  debug:
+    msg: "The backup zip file will be saved to: {{ zip_dest }}"
+
+- name: Create a zip file from the directory
+  win_command: |
+    powershell Compress-Archive -Path "{{ target_dir }}" -DestinationPath "{{ zip_dest }}"
