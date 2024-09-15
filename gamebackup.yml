@@ -24,7 +24,7 @@
     tags:
       - always
 
-  # Loop through games list
+  # Loop through games list (ensure proper indentation)
   - loop: "{{ games }}"
     loop_control:
       label: "{{ item.name }}"
