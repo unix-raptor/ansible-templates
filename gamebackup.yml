@@ -5,7 +5,7 @@
     backup_dir: "C:\\GameBackup"
     games:
       - name: GTA5
-        save_dir: "C:\\Labs"
+        save_dir: "C:\\Labs\\GTA5"
       - name: Wukong
         save_dir: "C:\\Labs\\Wukong"
       # Add more games here as needed
@@ -33,10 +33,10 @@
         - always
 
     - name: Backup and compress game saves
-      win_zip:
-        src: "{{ item.save_dir }}"
-        dest: "{{ backup_dir }}\\{{ item.name }}\\{{ item.name }}-{{ timestamp.stdout }}.zip"
-        force_delete: yes
+      community.windows.win_compress:
+        path: "{{ item.save_dir }}"
+        dest_path: "{{ backup_dir }}\\{{ item.name }}\\{{ item.name }}-{{ timestamp.stdout }}.zip"
+        format: zip
       loop: "{{ games }}"
       ignore_errors: yes
       tags:
