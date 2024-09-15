@@ -5,12 +5,16 @@
   vars:
     game_list:
       - name: 'gta5'
-        target_dir: 'C:\\Labs'
+        target_dir: 'C:\\GTA5_Labs'
       - name: 'wukong'
         target_dir: 'C:\\Wukong_Labs'
       # Add more games with specific target directories as needed
 
   tasks:
+    - name: Set tags to include
+      set_fact:
+        included_games: "{{ ansible_run_tags.split(',') }}"
+    
     - name: Backup and zip directories for selected games
       include_role:
         name: game_backup
@@ -19,4 +23,4 @@
         target_dir: "{{ item.target_dir }}"
         zip_dest: "{{ backup_base_dest }}\\{{ item.name }}\\{{ item.name }}-{{ timestamp }}.zip"
       with_items: "{{ game_list }}"
-      when: "'{{ item.name }}' in ansible_run_tags"
+      when: item.name in included_games
