@@ -11,36 +11,35 @@
       # Add more games here as needed
 
   tasks:
-    - name: Create main backup directory if it doesn't exist
-      ansible.windows.win_file:
-        path: "{{ backup_dir }}"
-        state: directory
-      tags:
-        - always
+  - name: Create main backup directory if it doesn't exist
+    ansible.windows.win_file:
+      path: "{{ backup_dir }}"
+      state: directory
+    tags:
+      - always
 
-    - name: Get current timestamp
-      win_shell: Get-Date -Format "yyyyMMdd-HHmmss"
-      register: timestamp
-      tags:
-        - always
+  - name: Get current timestamp
+    win_shell: Get-Date -Format "yyyyMMdd-HHmmss"
+    register: timestamp
+    tags:
+      - always
 
-    - name: Create game-specific backup directories
-      ansible.windows.win_file:
-        path: "{{ backup_dir }}\\{{ item.name }}"
-        state: directory
-      loop: "{{ games }}"
-      loop_control:
-        label: "{{ item.name }}"
-      tags:
-        - "{{ item.name }}"
+  # Loop through games list
+  - loop: "{{ games }}"
+    loop_control:
+      label: "{{ item.name }}"
+    tasks:
+      - name: Create game-specific backup directory
+        ansible.windows.win_file:
+          path: "{{ backup_dir }}\\{{ item.name }}"
+          state: directory
+        tags:
+          - "{{ item.name }}"
 
-    - name: Backup and compress game saves
-      community.windows.win_zip:
-        src: "{{ item.save_dir }}"
-        dest: "{{ backup_dir }}\\{{ item.name }}\\{{ item.name }}-{{ timestamp.stdout }}.zip"
-        force: yes
-      loop: "{{ games }}"
-      loop_control:
-        label: "{{ item.name }}"
-      tags:
-        - "{{ item.name }}"
+      - name: Backup and compress game saves
+        community.windows.win_zip:
+          src: "{{ item.save_dir }}"
+          dest: "{{ backup_dir }}\\{{ item.name }}\\{{ item.name }}-{{ timestamp.stdout }}.zip"
+          force: yes
+        tags:
+          - "{{ item.name }}"
