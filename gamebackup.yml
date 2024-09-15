@@ -11,7 +11,7 @@
 
   tasks:
     - name: Create main backup directory if it doesn't exist
-      community.windows.win_file:
+      ansible.windows.win_file:
         path: "{{ backup_dir }}"
         state: directory
       tags:
@@ -24,8 +24,8 @@
         - always
 
     - name: Backup game saves
-      community.windows.win_archive:
-        path: "{{ item.save_dir }}"
+      community.windows.win_zip:
+        src: "{{ item.save_dir }}"
         dest: "{{ backup_dir }}\\{{ item.name }}\\{{ item.name }}-{{ timestamp.stdout }}.zip"
         force: yes
       loop: "{{ games }}"
