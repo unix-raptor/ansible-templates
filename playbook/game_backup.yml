@@ -14,6 +14,18 @@
     - name: Set tags to include
       set_fact:
         included_games: "{{ ansible_run_tags.split(',') }}"
+
+    - name: Debug ansible_run_tags
+      debug:
+        msg: "ansible_run_tags: {{ ansible_run_tags }}"
+
+    - name: Set tags to include
+      set_fact:
+        included_games: "{{ ansible_run_tags if ansible_run_tags is iterable else ansible_run_tags.split(',') }}"
+
+    - name: Debug the included games list
+      debug:
+        msg: "Included games: {{ included_games }}"
     
     - name: Backup and zip directories for selected games
       include_role:
