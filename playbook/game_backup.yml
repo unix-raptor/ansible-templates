@@ -13,19 +13,11 @@
       # Add more games with specific target directories as needed
 
   tasks:
-    - name: Set tags to include
-      set_fact:
-        included_games: "{{ ansible_run_tags.split(',') }}"
-
-    - name: Debug ansible_run_tags
+    - name: Debug game_list
       debug:
-        msg: "ansible_run_tags: {{ ansible_run_tags }}"
+        msg: "Game list: {{ game_list }}"
 
-    - name: Set tags to include
-      set_fact:
-        included_games: "{{ ansible_run_tags if ansible_run_tags is iterable else ansible_run_tags.split(',') }}"
-
-    - name: Debug the included games list
+    - name: Debug included_games
       debug:
         msg: "Included games: {{ included_games }}"
     
