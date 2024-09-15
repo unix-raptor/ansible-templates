@@ -1,6 +1,6 @@
 ---
 - name: Backup and zip a directory on Windows
-  hosts: windows
+  hosts: windows_vm
   vars:
     target_dir: 'C:\\Labs'
     backup_base_dest: 'C:\\GameSave'
