@@ -39,16 +39,18 @@
 
     
     - name: Backup and zip directories for selected games
-      include_role:
-        name: game_backup
-      vars:
-        game_name: "{{ item.name }}"
-        target_dir: "{{ item.target_dir }}"
-        zip_dest: "{{ backup_base_dest }}\\{{ item.name }}\\{{ item.name }}-{{ timestamp }}.zip"
-      with_items: "{{ game_list }}"
-      when: item.name in ansible_run_tags
-      tasks:
-        - name: Debug current item
+      block:
+        - name: Ensure game-specific backup directory exists
+          win_file:
+            path: "{{ backup_base_dest }}\\{{ item.name }}"
+            state: directory
+
+        - name: Print the file destination directory
           debug:
-            msg: "Processing game: {{ item.name }} with target_dir: {{ item.target_dir }}"
-          when: item.name in ansible_run_tags
+            msg: "The backup zip file will be saved to: {{ backup_base_dest }}\\{{ item.name }}\\{{ item.name }}-{{ timestamp }}.zip"
+
+        - name: Create a zip file from the directory
+          win_command: |
+            powershell Compress-Archive -Path "{{ item.target_dir }}" -DestinationPath "{{ backup_base_dest }}\\{{ item.name }}\\{{ item.name }}-{{ timestamp }}.zip"
+      loop: "{{ game_list }}"
+      when: item.name in ansible_run_tags
