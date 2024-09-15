@@ -6,7 +6,6 @@
       win_chocolatey:
         name: chocolatey
         state: present
-      become: yes
       tags:
         - chocolatey
 
