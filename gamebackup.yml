@@ -8,11 +8,10 @@
         save_dir: "C:\\Labs\\GTA5"
       - name: Wukong
         save_dir: "C:\\Labs\\Wukong"
-      # Add more games here as needed
 
   tasks:
     - name: Create main backup directory if it doesn't exist
-      win_file:
+      community.windows.win_file:
         path: "{{ backup_dir }}"
         state: directory
       tags:
@@ -24,20 +23,12 @@
       tags:
         - always
 
-    - name: Create backup_game.yml on remote
-      win_template:
-        src: backup_game.yml.j2
-        dest: "{{ backup_dir }}\\backup_game.yml"
-      vars:
-        timestamp: "{{ timestamp.stdout }}"
-      tags:
-        - always
-
-    - name: Execute backup tasks
-      win_shell: |
-        Invoke-Expression -Command "& '{{ backup_dir }}\\backup_game.yml'"
+    - name: Backup game saves
+      community.windows.win_archive:
+        path: "{{ item.save_dir }}"
+        dest: "{{ backup_dir }}\\{{ item.name }}\\{{ item.name }}-{{ timestamp.stdout }}.zip"
+        force: yes
       loop: "{{ games }}"
       loop_control:
-        loop_var: game
-      tags:
-        - "{{ game.name }}"
+        label: "{{ item.name }}"
+      tags: "{{ item.name }}"
