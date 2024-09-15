@@ -6,6 +6,7 @@
     backup_base_dest: 'C:\\GameSave'
     game_name: 'labs'  # Replace with your game name
     timestamp: "{{ ansible_date_time.iso8601_basic }}"  # Timestamp for the zip file name
+    zip_dest: "{{ backup_base_dest }}\\{{ game_name }}\\{{ game_name }}-{{ timestamp }}.zip"
 
   tasks:
     - name: Ensure backup base directory exists
