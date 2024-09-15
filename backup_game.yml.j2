@@ -1,0 +1,23 @@
+- name: Create game-specific backup directory
+  win_file:
+    path: "{{ backup_dir }}\\{{ game.name }}"
+    state: directory
+
+- name: Backup and compress game saves
+  win_shell: |
+    $ErrorActionPreference = "Continue"
+    if (Test-Path "{{ game.save_dir }}") {
+      Compress-Archive -Path "{{ game.save_dir }}" -DestinationPath "{{ backup_dir }}\\{{ game.name }}\\{{ game.name }}-{{ timestamp }}.zip" -Force
+      if (Test-Path "{{ backup_dir }}\\{{ game.name }}\\{{ game.name }}-{{ timestamp }}.zip") {
+        Write-Output "Backup successful"
+      } else {
+        Write-Output "Backup failed"
+      }
+    } else {
+      Write-Output "Save directory does not exist"
+    }
+  register: backup_result
+
+- name: Report backup status
+  debug:
+    msg: "Backup for {{ game.name }}: {{ backup_result.stdout_lines[-1] }}"
