@@ -13,7 +13,7 @@
   tasks:
     - name: Backup and zip directories for selected games
       include_role:
-        name: backup
+        name: game_backup
       vars:
         game_name: "{{ item.name }}"
         target_dir: "{{ item.target_dir }}"
