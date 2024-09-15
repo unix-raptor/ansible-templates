@@ -1,6 +1,22 @@
 ---
-- name: Ping Windows VM
+- name: Ping and Install Firefox on Windows VM
   hosts: windows_vm
   tasks:
     - name: Ping the Windows host
       win_ping:
+
+    - name: Download Firefox installer
+      win_get_url:
+        url: https://download.mozilla.org/?product=firefox-stub&os=win&lang=en-US
+        dest: C:\Temp\firefox_installer.exe
+      become: yes
+
+    - name: Install Firefox
+      win_command: C:\Temp\firefox_installer.exe /silent
+      become: yes
+
+    - name: Clean up installer
+      win_file:
+        path: C:\Temp\firefox_installer.exe
+        state: absent
+      become: yes
