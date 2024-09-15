@@ -5,7 +5,7 @@
     backup_dir: "C:\\GameBackup"
     games:
       - name: GTA5
-        save_dir: "C:\\Labs\\GTA5"
+        save_dir: "C:\\Labs"
       - name: Wukong
         save_dir: "C:\\Labs\\Wukong"
       # Add more games here as needed
