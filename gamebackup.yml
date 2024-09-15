@@ -4,9 +4,9 @@
   vars:
     backup_dir: "C:\\GameBackup"
     games:
-      - name: GTA5
+      - name: gta5
         save_dir: "C:\\Labs\\GTA5"
-      - name: Wukong
+      - name: wukong
         save_dir: "C:\\Labs\\Wukong"
       # Add more games here as needed
 
