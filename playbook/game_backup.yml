@@ -47,3 +47,8 @@
         zip_dest: "{{ backup_base_dest }}\\{{ item.name }}\\{{ item.name }}-{{ timestamp }}.zip"
       with_items: "{{ game_list }}"
       when: item.name in ansible_run_tags
+      tasks:
+        - name: Debug current item
+          debug:
+            msg: "Processing game: {{ item.name }} with target_dir: {{ item.target_dir }}"
+          when: item.name in ansible_run_tags
