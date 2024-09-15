@@ -1,0 +1,6 @@
+---
+- name: Test backup role
+  hosts: windows_vm
+  gather_facts: yes
+  roles:
+    - game_backup
