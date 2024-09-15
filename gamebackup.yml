@@ -8,6 +8,7 @@
         save_dir: "C:\\Labs\\GTA5"
       - name: Wukong
         save_dir: "C:\\Labs\\Wukong"
+      # Add more games here as needed
 
   tasks:
     - name: Create main backup directory if it doesn't exist
@@ -23,7 +24,17 @@
       tags:
         - always
 
-    - name: Backup game saves
+    - name: Create game-specific backup directories
+      ansible.windows.win_file:
+        path: "{{ backup_dir }}\\{{ item.name }}"
+        state: directory
+      loop: "{{ games }}"
+      loop_control:
+        label: "{{ item.name }}"
+      tags:
+        - "{{ item.name }}"
+
+    - name: Backup and compress game saves
       community.windows.win_zip:
         src: "{{ item.save_dir }}"
         dest: "{{ backup_dir }}\\{{ item.name }}\\{{ item.name }}-{{ timestamp.stdout }}.zip"
@@ -31,4 +42,5 @@
       loop: "{{ games }}"
       loop_control:
         label: "{{ item.name }}"
-      tags: "{{ item.name }}"
+      tags:
+        - "{{ item.name }}"
