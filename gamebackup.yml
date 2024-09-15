@@ -8,17 +8,19 @@
 
   tasks:
     - name: Backup GTA 5 Saves
-      import_playbook: copyandzip.yml
+      include_tasks: copyandzip.yml
       vars:
         zip_name: "gta5_backup_{{ timestamp }}"
         target_directory: "C:\\Labs"
         backup_folder: "{{ backup_folder }}"
-      tags: 
+      tags:
         - gta5
 
     - name: Backup Red Dead Redemption 2 Saves
-      import_playbook: copyandzip.yml
+      include_tasks: copyandzip.yml
       vars:
         zip_name: "rdr2_backup_{{ timestamp }}"
-        target_directory: "/path/to/rdr2_saves"
+        target_directory: "C:\\path\\to\\rdr2_saves"
         backup_folder: "{{ backup_folder }}"
+      tags:
+        - rdr2
