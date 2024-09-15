@@ -24,32 +24,37 @@
       tags:
         - always
 
-    - name: Process game backups
-      block:
-        - name: Create game-specific backup directory
-          win_file:
-            path: "{{ backup_dir }}\\{{ game.name }}"
-            state: directory
+    - name: Create backup_game.yml on remote
+      win_copy:
+        dest: "{{ backup_dir }}\\backup_game.yml"
+        content: |
+          - name: Create game-specific backup directory
+            win_file:
+              path: "{{ backup_dir }}\\{{ game.name }}"
+              state: directory
 
-        - name: Backup and compress game saves
-          win_shell: |
-            $ErrorActionPreference = "Continue"
-            if (Test-Path "{{ game.save_dir }}") {
-              Compress-Archive -Path "{{ game.save_dir }}" -DestinationPath "{{ backup_dir }}\\{{ game.name }}\\{{ game.name }}-{{ timestamp.stdout }}.zip" -Force
-              if (Test-Path "{{ backup_dir }}\\{{ game.name }}\\{{ game.name }}-{{ timestamp.stdout }}.zip") {
-                Write-Output "Backup successful"
+          - name: Backup and compress game saves
+            win_shell: |
+              $ErrorActionPreference = "Continue"
+              if (Test-Path "{{ game.save_dir }}") {
+                Compress-Archive -Path "{{ game.save_dir }}" -DestinationPath "{{ backup_dir }}\\{{ game.name }}\\{{ game.name }}-{{ timestamp.stdout }}.zip" -Force
+                if (Test-Path "{{ backup_dir }}\\{{ game.name }}\\{{ game.name }}-{{ timestamp.stdout }}.zip") {
+                  Write-Output "Backup successful"
+                } else {
+                  Write-Output "Backup failed"
+                }
               } else {
-                Write-Output "Backup failed"
+                Write-Output "Save directory does not exist"
               }
-            } else {
-              Write-Output "Save directory does not exist"
-            }
-          register: backup_result
+            register: backup_result
 
-        - name: Report backup status
-          debug:
-            msg: "Backup for {{ game.name }}: {{ backup_result.stdout_lines[-1] }}"
+          - name: Report backup status
+            debug:
+              msg: "Backup for {{ game.name }}: {{ backup_result.stdout_lines[-1] }}"
 
+    - name: Process game backups
+      win_shell: |
+        Invoke-Expression -Command "& '{{ backup_dir }}\\backup_game.yml'"
       loop: "{{ games }}"
       loop_control:
         loop_var: game
