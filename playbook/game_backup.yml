@@ -19,11 +19,18 @@
       tags:
         - always
     
-    - name: Debug ansible_run_tags
-      debug:
-        msg: "Ansible run tags: {{ ansible_run_tags }}"
+    - name: Convert ansible_run_tags to list
+      set_fact:
+        ansible_run_tags_list: "{{ ansible_run_tags | split(',') }}"
       tags:
         - always
+
+    - name: Debug converted ansible_run_tags
+      debug:
+        msg: "Converted ansible run tags: {{ ansible_run_tags_list }}"
+      tags:
+        - always
+
     
     - name: Backup and zip directories for selected games
       include_role:
