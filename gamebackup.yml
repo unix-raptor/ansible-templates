@@ -13,6 +13,8 @@
         zip_name: "gta5_backup_{{ timestamp }}"
         target_directory: "C:\\Labs"
         backup_folder: "{{ backup_folder }}"
+      tags: 
+        - gta5
 
     - name: Backup Red Dead Redemption 2 Saves
       import_playbook: copyandzip.yml
