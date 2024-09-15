@@ -33,7 +33,7 @@
         - always
 
     - name: Backup and compress game saves
-      community.windows.win_compress:
+      win_compress:
         path: "{{ item.save_dir }}"
         dest_path: "{{ backup_dir }}\\{{ item.name }}\\{{ item.name }}-{{ timestamp.stdout }}.zip"
         format: zip
