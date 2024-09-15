@@ -1,26 +1,60 @@
 ---
-- name: Backup Game Saves
+- name: Backup Game Saves on Windows
   hosts: windows_vm
-  gather_facts: no
   vars:
-    timestamp: "{{ ansible_date_time.iso8601_basic }}"
-    backup_folder: "C:\\GameBackup"
+    backup_dir: "C:\\GameBackup"
+    games:
+      - name: GTA5
+        save_dir: "C:\\Labs\\GTA5"
+      - name: Wukong
+        save_dir: "C:\\Labs\\Wukong"
+      # Add more games here as needed
 
   tasks:
-    - name: Backup GTA 5 Saves
-      include_tasks: copyandzip.yml
-      vars:
-        zip_name: "gta5_backup_{{ timestamp }}"
-        target_directory: "C:\\Labs"
-        backup_folder: "{{ backup_folder }}"
+    - name: Create main backup directory if it doesn't exist
+      win_file:
+        path: "{{ backup_dir }}"
+        state: directory
       tags:
-        - gta5
+        - always
 
-    - name: Backup Red Dead Redemption 2 Saves
-      include_tasks: copyandzip.yml
-      vars:
-        zip_name: "rdr2_backup_{{ timestamp }}"
-        target_directory: "C:\\path\\to\\rdr2_saves"
-        backup_folder: "{{ backup_folder }}"
+    - name: Create game-specific backup directories
+      win_file:
+        path: "{{ backup_dir }}\\{{ item.name }}"
+        state: directory
+      loop: "{{ games }}"
       tags:
-        - rdr2
+        - "{{ item.name }}"
+
+    - name: Get current timestamp
+      win_shell: Get-Date -Format "yyyyMMdd-HHmmss"
+      register: timestamp
+      tags:
+        - always
+
+    - name: Backup and compress game saves
+      win_zip:
+        src: "{{ item.save_dir }}"
+        dest: "{{ backup_dir }}\\{{ item.name }}\\{{ item.name }}-{{ timestamp.stdout }}.zip"
+        force_delete: yes
+      loop: "{{ games }}"
+      ignore_errors: yes
+      tags:
+        - "{{ item.name }}"
+
+    - name: Check if zip file was created
+      win_stat:
+        path: "{{ backup_dir }}\\{{ item.name }}\\{{ item.name }}-{{ timestamp.stdout }}.zip"
+      register: zip_stat
+      loop: "{{ games }}"
+      tags:
+        - "{{ item.name }}"
+
+    - name: Report backup status
+      debug:
+        msg: "Backup for {{ item.item.name }} was {% if item.stat.exists %}successful{% else %}unsuccessful (possibly due to missing save directory){% endif %}"
+      loop: "{{ zip_stat.results }}"
+      loop_control:
+        label: "{{ item.item.name }}"
+      tags:
+        - "{{ item.item.name }}"
