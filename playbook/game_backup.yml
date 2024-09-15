@@ -46,4 +46,4 @@
         target_dir: "{{ item.target_dir }}"
         zip_dest: "{{ backup_base_dest }}\\{{ item.name }}\\{{ item.name }}-{{ timestamp }}.zip"
       with_items: "{{ game_list }}"
-      when: item.name in included_games
+      when: item.name in ansible_run_tags
