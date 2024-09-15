@@ -18,43 +18,40 @@
       tags:
         - always
 
-    - name: Create game-specific backup directories
-      win_file:
-        path: "{{ backup_dir }}\\{{ item.name }}"
-        state: directory
-      loop: "{{ games }}"
-      tags:
-        - "{{ item.name }}"
-
     - name: Get current timestamp
       win_shell: Get-Date -Format "yyyyMMdd-HHmmss"
       register: timestamp
       tags:
         - always
 
-    - name: Backup and compress game saves
-      win_shell: |
-        $ErrorActionPreference = "Continue"
-        if (Test-Path "{{ item.save_dir }}") {
-          Compress-Archive -Path "{{ item.save_dir }}" -DestinationPath "{{ backup_dir }}\\{{ item.name }}\\{{ item.name }}-{{ timestamp.stdout }}.zip" -Force
-          if (Test-Path "{{ backup_dir }}\\{{ item.name }}\\{{ item.name }}-{{ timestamp.stdout }}.zip") {
-            Write-Output "Backup successful"
-          } else {
-            Write-Output "Backup failed"
-          }
-        } else {
-          Write-Output "Save directory does not exist"
-        }
-      register: backup_result
-      loop: "{{ games }}"
-      tags:
-        - "{{ item.name }}"
+    - name: Process game backups
+      block:
+        - name: Create game-specific backup directory
+          win_file:
+            path: "{{ backup_dir }}\\{{ game.name }}"
+            state: directory
 
-    - name: Report backup status
-      debug:
-        msg: "Backup for {{ item.item.name }}: {{ item.stdout_lines[-1] }}"
-      loop: "{{ backup_result.results }}"
+        - name: Backup and compress game saves
+          win_shell: |
+            $ErrorActionPreference = "Continue"
+            if (Test-Path "{{ game.save_dir }}") {
+              Compress-Archive -Path "{{ game.save_dir }}" -DestinationPath "{{ backup_dir }}\\{{ game.name }}\\{{ game.name }}-{{ timestamp.stdout }}.zip" -Force
+              if (Test-Path "{{ backup_dir }}\\{{ game.name }}\\{{ game.name }}-{{ timestamp.stdout }}.zip") {
+                Write-Output "Backup successful"
+              } else {
+                Write-Output "Backup failed"
+              }
+            } else {
+              Write-Output "Save directory does not exist"
+            }
+          register: backup_result
+
+        - name: Report backup status
+          debug:
+            msg: "Backup for {{ game.name }}: {{ backup_result.stdout_lines[-1] }}"
+
+      loop: "{{ games }}"
       loop_control:
-        label: "{{ item.item.name }}"
+        loop_var: game
       tags:
-        - "{{ item.item.name }}"
+        - "{{ game.name }}"
