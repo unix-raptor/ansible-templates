@@ -5,7 +5,7 @@
   vars:
     game_list:
       - name: 'gta5'
-        target_dir: 'C:\\GTA5_Labs'
+        target_dir: 'C:\\labs'
       - name: 'wukong'
         target_dir: 'C:\\Wukong_Labs'
       # Add more games with specific target directories as needed
