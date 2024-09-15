@@ -1,0 +1,6 @@
+---
+- name: Ping Windows VM
+  hosts: windows_vm
+  tasks:
+    - name: Ping the Windows host
+      win_ping:
