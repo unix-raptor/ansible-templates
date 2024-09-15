@@ -2,6 +2,8 @@
 - name: Backup and zip directories for specified games
   hosts: windows_vm
   gather_facts: yes
+  roles:
+    - game_backup
   vars:
     game_list:
       - name: 'gta5'
