@@ -1,0 +1,22 @@
+---
+- name: Backup Game Saves
+  hosts: windows_vm
+  gather_facts: no
+  vars:
+    timestamp: "{{ ansible_date_time.iso8601_basic }}"
+    backup_folder: "C:\\GameBackup"
+
+  tasks:
+    - name: Backup GTA 5 Saves
+      import_playbook: copyandzip.yml
+      vars:
+        zip_name: "gta5_backup_{{ timestamp }}"
+        target_directory: "C:\\Labs"
+        backup_folder: "{{ backup_folder }}"
+
+    - name: Backup Red Dead Redemption 2 Saves
+      import_playbook: copyandzip.yml
+      vars:
+        zip_name: "rdr2_backup_{{ timestamp }}"
+        target_directory: "/path/to/rdr2_saves"
+        backup_folder: "{{ backup_folder }}"
