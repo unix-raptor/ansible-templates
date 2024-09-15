@@ -10,7 +10,7 @@
         - chocolatey
 
     - name: Install packages using Chocolatey
-      chocolatey.chocolatey.win_chocolatey:
+      win_chocolatey:
         name: "{{ item }}"
         state: present
       loop:
@@ -18,9 +18,18 @@
         - vscode
       tags:
         - install
+
     - name: Uninstall Visual Studio Code
-      chocolatey.chocolatey.win_chocolatey:
+      win_chocolatey:
         name: vscode
+        state: absent
+      tags:
+        - uninstall
+        - vscode
+
+    - name: Uninstall vscode.install
+      win_chocolatey:
+        name: vscode.install
         state: absent
       tags:
         - uninstall
