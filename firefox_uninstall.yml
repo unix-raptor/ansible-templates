@@ -1,23 +1,31 @@
 ---
-- name: Manage Firefox Installation on Windows VM
+- name: List Installed Applications on Windows VM
   hosts: windows_vm
   tasks:
-    - name: Check if Firefox is installed
-      win_command: powershell.exe -Command "Get-WmiObject -Query \"SELECT * FROM Win32_Product WHERE Name = 'Mozilla Firefox'\""
-      register: firefox_check
-      ignore_errors: yes
+    - name: Get list of installed applications from registry
+      win_shell: |
+        $installedApps = @()
+        $registryPaths = @(
+          'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall',
+          'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall'
+        )
+        foreach ($path in $registryPaths) {
+          $keys = Get-ChildItem -Path $path
+          foreach ($key in $keys) {
+            $props = Get-ItemProperty -Path $key.PSPath
+            if ($props.DisplayName) {
+              $installedApps += [PSCustomObject]@{
+                Name          = $props.DisplayName
+                Version       = $props.DisplayVersion
+                InstallLocation = $props.InstallLocation
+                UninstallString = $props.UninstallString
+              }
+            }
+          }
+        }
+        $installedApps | Format-Table -AutoSize
+      register: installed_apps
 
-    - name: Uninstall Firefox
-      win_command: powershell.exe -Command "Start-Process msiexec.exe -ArgumentList '/x {F6E5CDA4-7F48-4B09-BEBE-21D92B94E0D1} /quiet /norestart' -NoNewWindow -Wait"
-      when: "'Mozilla Firefox' in firefox_check.stdout"
-      ignore_errors: yes
-      register: uninstall_result
-
-    - name: Verify Firefox uninstallation
-      win_command: powershell.exe -Command "Get-WmiObject -Query \"SELECT * FROM Win32_Product WHERE Name = 'Mozilla Firefox'\""
-      register: firefox_check_after_uninstall
-      ignore_errors: yes
-
-    - name: Report uninstallation status
+    - name: Display installed applications
       debug:
-        msg: "Firefox uninstallation status: {{ uninstall_result.stdout if uninstall_result is defined else 'Not executed' }}. Verification: {{ firefox_check_after_uninstall.stdout if firefox_check_after_uninstall is defined else 'Not executed' }}"
+        msg: "{{ installed_apps.stdout_lines }}"
