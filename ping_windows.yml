@@ -5,6 +5,11 @@
     - name: Ping the Windows host
       win_ping:
 
+    - name: Ensure C:\\Temp directory exists
+      win_file:
+        path: C:\Temp
+        state: directory
+
     - name: Download Firefox installer
       win_get_url:
         url: https://download.mozilla.org/?product=firefox-stub&os=win&lang=en-US
