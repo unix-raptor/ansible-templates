@@ -19,6 +19,12 @@
       tags:
         - always
     
+    - name: Debug ansible_run_tags
+      debug:
+        msg: "Ansible run tags: {{ ansible_run_tags }}"
+      tags:
+        - always
+    
     - name: Backup and zip directories for selected games
       include_role:
         name: game_backup
