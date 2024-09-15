@@ -1,0 +1,31 @@
+---
+- name: Backup and Zip Directory
+  hosts: localhost
+  gather_facts: no
+  vars:
+    zip_name: "{{ zip_name }}"
+    target_directory: "{{ target_directory }}"
+    backup_folder: "{{ backup_folder }}"
+
+  tasks:
+    - name: Ensure backup folder exists
+      file:
+        path: "{{ backup_folder }}"
+        state: directory
+
+    - name: Copy target directory to backup folder
+      command:
+        cmd: "cp -r {{ target_directory }} {{ backup_folder }}/{{ zip_name }}_tmp"
+      args:
+        chdir: "{{ backup_folder }}"
+
+    - name: Zip the copied directory
+      command:
+        cmd: "zip -r {{ backup_folder }}/{{ zip_name }}.zip {{ zip_name }}_tmp"
+      args:
+        chdir: "{{ backup_folder }}"
+
+    - name: Remove temporary directory
+      file:
+        path: "{{ backup_folder }}/{{ zip_name }}_tmp"
+        state: absent
