@@ -1,6 +1,6 @@
 ---
 - name: Install Chocolatey and manage packages on Windows
-  hosts: windows
+  hosts: windows_vm
   tasks:
     - name: Ensure Chocolatey is installed
       win_chocolatey:
