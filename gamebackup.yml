@@ -17,6 +17,10 @@
       win_file:
         path: "{{ backup_base_dest }}\\{{ game_name }}"
         state: directory
+        
+    - name: Print the file destination directory
+      debug:
+        msg: "The backup zip file will be saved to: {{ zip_dest }}"
 
     - name: Create a zip file from the directory
       win_command: |
