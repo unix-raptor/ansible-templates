@@ -1,15 +1,16 @@
 ---
 - name: Backup Games on Windows
-  hosts: windows_vm
+  hosts: windows_hosts
   gather_facts: no
+  tags: backup
 
   vars:
-    backup_dir: "C:\path\to\your\backup\directory"
+    backup_dir: "C:\\path\\to\\your\\backup\\directory"
     games:
       - name: gta5
-        save_dir: "C:\path\to\gta5\saves"
+        save_dir: "C:\\path\\to\\gta5\\saves"
       - name: wukong
-        save_dir: "C:\path\to\wukong\saves"
+        save_dir: "C:\\path\\to\\wukong\\saves"
       # Add more games here
 
   tasks:
@@ -17,15 +18,48 @@
       ansible.windows.win_file:
         path: "{{ backup_dir }}"
         state: directory
+      register: create_dir_result
+      ignore_errors: yes
+
+    - name: Log directory creation result
+      ansible.builtin.debug:
+        msg: "Backup directory created: {{ create_dir_result.path }} or already exists."
+      when: create_dir_result.changed or create_dir_result.state == 'directory'
 
     - name: Backup specified games
       ansible.windows.win_copy:
         src: "{{ item.save_dir }}"
-        dest: "{{ backup_dir }}\{{ item.name }}.zip"
+        dest: "{{ backup_dir }}\\{{ item.name }}.zip"
         force: yes
       loop: "{{ games }}"
       when: item.name in tags
+      register: backup_result
+      ignore_errors: yes
+
+    - name: Log backup results
+      ansible.builtin.debug:
+        msg: "Backup created for {{ item.item.name }}: {{ backup_result[item.index].dest }}."
+      loop: "{{ backup_result.results }}"
+      when: item.rc == 0
+
+    - name: Log errors during backup
+      ansible.builtin.debug:
+        msg: "Failed to backup {{ item.item.name }}: {{ item.msg }}"
+      loop: "{{ backup_result.results }}"
+      when: item.rc != 0
 
     - name: Compress backup files (optional)
-      ansible.windows.win_command: powershell -Command "Compress-Archive -Path '{{ backup_dir }}\*.zip' -DestinationPath '{{ backup_dir }}\all_games.zip'"
+      ansible.windows.win_command: powershell -Command "Compress-Archive -Path '{{ backup_dir }}\\*.zip' -DestinationPath '{{ backup_dir }}\\all_games.zip'"
       when: "gta5" in tags or "wukong" in tags  # Adjust based on your tags
+      register: compress_result
+      ignore_errors: yes
+
+    - name: Log compression result
+      ansible.builtin.debug:
+        msg: "All game backups compressed into all_games.zip."
+      when: compress_result.rc == 0
+
+    - name: Log compression error
+      ansible.builtin.debug:
+        msg: "Failed to compress game backups: {{ compress_result.stderr }}"
+      when: compress_result.rc != 0
