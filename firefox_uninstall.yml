@@ -17,4 +17,11 @@
         - git
         - vscode
       tags:
-        - packages
+        - install
+    - name: Uninstall Visual Studio Code
+      chocolatey.chocolatey.win_chocolatey:
+        name: vscode
+        state: absent
+      tags:
+        - uninstall
+        - vscode
