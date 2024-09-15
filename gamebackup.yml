@@ -1,45 +1,31 @@
 ---
-- name: Backup Game Saves on Windows
+- name: Backup Games on Windows
   hosts: windows_vm
+  gather_facts: no
+
   vars:
-    backup_dir: "C:\\GameBackup"
+    backup_dir: "C:\path\to\your\backup\directory"
     games:
       - name: gta5
-        save_dir: "C:\\Labs\\GTA5"
+        save_dir: "C:\path\to\gta5\saves"
       - name: wukong
-        save_dir: "C:\\Labs\\Wukong"
-      # Add more games here as needed
+        save_dir: "C:\path\to\wukong\saves"
+      # Add more games here
 
   tasks:
-  - name: Create main backup directory if it doesn't exist
-    ansible.windows.win_file:
-      path: "{{ backup_dir }}"
-      state: directory
-    tags:
-      - always
+    - name: Create backup directory if it doesn't exist
+      ansible.windows.win_file:
+        path: "{{ backup_dir }}"
+        state: directory
 
-  - name: Get current timestamp
-    win_shell: Get-Date -Format "yyyyMMdd-HHmmss"
-    register: timestamp
-    tags:
-      - always
+    - name: Backup specified games
+      ansible.windows.win_copy:
+        src: "{{ item.save_dir }}"
+        dest: "{{ backup_dir }}\{{ item.name }}.zip"
+        force: yes
+      loop: "{{ games }}"
+      when: item.name in tags
 
-  # Loop through games list (ensure proper indentation)
-  - loop: "{{ games }}"
-    loop_control:
-      label: "{{ item.name }}"
-    tasks:
-      - name: Create game-specific backup directory
-        ansible.windows.win_file:
-          path: "{{ backup_dir }}\\{{ item.name }}"
-          state: directory
-        tags:
-          - "{{ item.name }}"
-
-      - name: Backup and compress game saves
-        community.windows.win_zip:
-          src: "{{ item.save_dir }}"
-          dest: "{{ backup_dir }}\\{{ item.name }}\\{{ item.name }}-{{ timestamp.stdout }}.zip"
-          force: yes
-        tags:
-          - "{{ item.name }}"
+    - name: Compress backup files (optional)
+      ansible.windows.win_command: powershell -Command "Compress-Archive -Path '{{ backup_dir }}\*.zip' -DestinationPath '{{ backup_dir }}\all_games.zip'"
+      when: "gta5" in tags or "wukong" in tags  # Adjust based on your tags
