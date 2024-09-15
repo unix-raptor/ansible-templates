@@ -3,21 +3,21 @@
   hosts: windows_vm
   tasks:
     - name: Check if Firefox is installed
-      win_command: powershell.exe Get-WmiObject -Query "SELECT * FROM Win32_Product WHERE Name = 'Mozilla Firefox'"
+      win_command: powershell.exe -Command "Get-WmiObject -Query \"SELECT * FROM Win32_Product WHERE Name = 'Mozilla Firefox'\""
       register: firefox_check
       ignore_errors: yes
 
     - name: Uninstall Firefox
-      win_command: powershell.exe "Start-Process msiexec.exe -ArgumentList '/x {F6E5CDA4-7F48-4B09-BEBE-21D92B94E0D1} /quiet /norestart' -NoNewWindow -Wait"
-      when: firefox_check.stdout is search("Mozilla Firefox")
+      win_command: powershell.exe -Command "Start-Process msiexec.exe -ArgumentList '/x {F6E5CDA4-7F48-4B09-BEBE-21D92B94E0D1} /quiet /norestart' -NoNewWindow -Wait"
+      when: "'Mozilla Firefox' in firefox_check.stdout"
       ignore_errors: yes
       register: uninstall_result
 
     - name: Verify Firefox uninstallation
-      win_command: powershell.exe Get-WmiObject -Query "SELECT * FROM Win32_Product WHERE Name = 'Mozilla Firefox'"
+      win_command: powershell.exe -Command "Get-WmiObject -Query \"SELECT * FROM Win32_Product WHERE Name = 'Mozilla Firefox'\""
       register: firefox_check_after_uninstall
       ignore_errors: yes
 
     - name: Report uninstallation status
       debug:
-        msg: "Firefox uninstallation status: {{ uninstall_result.stdout }}. Verification: {{ firefox_check_after_uninstall.stdout }}"
+        msg: "Firefox uninstallation status: {{ uninstall_result.stdout if uninstall_result is defined else 'Not executed' }}. Verification: {{ firefox_check_after_uninstall.stdout if firefox_check_after_uninstall is defined else 'Not executed' }}"
