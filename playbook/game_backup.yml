@@ -18,13 +18,6 @@
         msg: "Game list: {{ game_list }}"
       tags:
         - always
-
-
-    - name: Debug included_games
-      debug:
-        msg: "Included games: {{ included_games }}"
-      tags:
-        - always
     
     - name: Backup and zip directories for selected games
       include_role:
