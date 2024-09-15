@@ -33,27 +33,27 @@
         - always
 
     - name: Backup and compress game saves
-      win_compress:
-        path: "{{ item.save_dir }}"
-        dest_path: "{{ backup_dir }}\\{{ item.name }}\\{{ item.name }}-{{ timestamp.stdout }}.zip"
-        format: zip
-      loop: "{{ games }}"
-      ignore_errors: yes
-      tags:
-        - "{{ item.name }}"
-
-    - name: Check if zip file was created
-      win_stat:
-        path: "{{ backup_dir }}\\{{ item.name }}\\{{ item.name }}-{{ timestamp.stdout }}.zip"
-      register: zip_stat
+      win_shell: |
+        $ErrorActionPreference = "Continue"
+        if (Test-Path "{{ item.save_dir }}") {
+          Compress-Archive -Path "{{ item.save_dir }}" -DestinationPath "{{ backup_dir }}\\{{ item.name }}\\{{ item.name }}-{{ timestamp.stdout }}.zip" -Force
+          if (Test-Path "{{ backup_dir }}\\{{ item.name }}\\{{ item.name }}-{{ timestamp.stdout }}.zip") {
+            Write-Output "Backup successful"
+          } else {
+            Write-Output "Backup failed"
+          }
+        } else {
+          Write-Output "Save directory does not exist"
+        }
+      register: backup_result
       loop: "{{ games }}"
       tags:
         - "{{ item.name }}"
 
     - name: Report backup status
       debug:
-        msg: "Backup for {{ item.item.name }} was {% if item.stat.exists %}successful{% else %}unsuccessful (possibly due to missing save directory){% endif %}"
-      loop: "{{ zip_stat.results }}"
+        msg: "Backup for {{ item.item.name }}: {{ item.stdout_lines[-1] }}"
+      loop: "{{ backup_result.results }}"
       loop_control:
         label: "{{ item.item.name }}"
       tags:
